@@ -1,11 +1,25 @@
--- This version is fast.
+-- This version is fast(er).
 
 import Control.Concurrent (threadDelay)
-import Control.Monad (replicateM)
+import Control.Monad (replicateM, liftM)
 import Data.Array
 import System.Random
 
-type Time = Int
+-- Generic utility functions
+
+chunk :: Int -> [a] -> [[a]]
+chunk _ [] = [[]]
+chunk n xs = ys : chunk n zs
+  where (ys,zs) = splitAt n xs
+  
+count :: Eq a => a -> [a] -> Int
+count x xs = length (filter ((==) x) xs)
+
+iterateM :: Monad m => (a -> m a) -> a -> m ()
+iterateM f x = f x >>= iterateM f
+
+-- Game of Life
+
 type Loc = (Int,Int)
 
 data CellState = Alive | Dead
@@ -16,14 +30,6 @@ type World = Array Loc CellState
 worldSize = 40
 worldRange = ((0,0),(worldSize-1,worldSize-1))
 worldGrid = [(x,y) | x <- take worldSize [0..], y <- take worldSize [0..]]
-
-chunk :: Int -> [a] -> [[a]]
-chunk _ [] = [[]]
-chunk n xs = ys : chunk n zs
-  where (ys,zs) = splitAt n xs
-  
-count :: Eq a => a -> [a] -> Int
-count x xs = length (filter ((==) x) xs)
 
 randomCell :: IO CellState
 randomCell = do
@@ -62,13 +68,13 @@ renderWorld w = unlines $ chunk worldSize $ elems $ fmap cellChar w
   where cellChar Alive = '@'
         cellChar Dead  = ' '
 
-putFrame :: World -> IO ()
-putFrame f = do
-  putStr $ renderWorld f
+step :: World -> IO World
+step w = do
+  putStr $ renderWorld w
   threadDelay 2000
+  return $ evolve w
 
 main :: IO ()
-main = do
-  initWorld <- randomWorld
-  let worlds = iterate evolve initWorld
-  mapM_ putFrame worlds
+main = do 
+  world <- randomWorld
+  iterateM step world
