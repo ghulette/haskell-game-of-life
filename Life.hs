@@ -20,11 +20,10 @@ iterateM f x = f x >>= iterateM f
 
 -- Game of Life
 
-type Loc = (Int,Int)
-
 data CellState = Alive | Dead
   deriving (Eq,Show)
   
+type Loc = (Int,Int)
 type World = Array Loc CellState
 
 worldSize = 40
@@ -50,7 +49,7 @@ neighbors (x,y) = filter (inRange worldRange) locs
 
 neighborsAlive :: World -> Loc -> Int
 neighborsAlive w x = count Alive allNeighbors
-  where allNeighbors = map ((!) w) (neighbors x)
+  where allNeighbors = map (w!) (neighbors x)
 
 transition :: CellState -> Int -> CellState
 transition Dead  n | n == 3           = Alive
