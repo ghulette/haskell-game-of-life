@@ -21,8 +21,9 @@ type Loc = W.Loc
 data CellState = Alive | Dead
   deriving (Eq,Show)
 
-width = 40
-height = 79
+width = 79
+height = 40
+bounds = ((0,0),(width-1,height-1))
 
 randomCell :: IO CellState
 randomCell = do
@@ -32,7 +33,7 @@ randomCell = do
 randomWorld :: IO (World CellState)
 randomWorld = do
   states <- replicateM (width * height) randomCell
-  return $ W.fromList (width,height) states
+  return $ W.fromList bounds states
 
 neighborsAlive :: World CellState -> Loc -> Int
 neighborsAlive w x = count Alive allNeighbors
