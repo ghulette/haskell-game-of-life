@@ -1,6 +1,7 @@
+module Conway where
+
 -- This version is fast(er).
 
-import Control.Concurrent (threadDelay)
 import Control.Monad (replicateM)
 import System.Random
 import qualified World as W
@@ -21,26 +22,21 @@ type Loc = W.Loc
 data CellState = Alive | Dead
   deriving (Eq,Show)
 
-width = 79
-height = 40
-bounds = ((0,0),(width-1,height-1))
-
 randomCell :: IO CellState
 randomCell = do
   x <- randomIO
   return (if x then Alive else Dead)
   
-randomWorld :: IO (World CellState)
-randomWorld = do
+randomWorld :: Int -> Int -> IO (World CellState)
+randomWorld width height = do
   states <- replicateM (width * height) randomCell
-  return $ W.fromList bounds states
+  let bounds = ((0,0),(width-1,height-1))
+  return $ W.fromList bounds W.Plane states
 
 neighborsAlive :: World CellState -> Loc -> Int
-neighborsAlive w x = count Alive allNeighbors
-  where allNeighbors = map (W.cellAt w) (W.neighbors w d x)
-        d = [(-1,-1),(0,-1),(1,-1),
-             (-1, 0),       (1, 0),
-             (-1, 1),(0, 1),(1, 1)]
+neighborsAlive w x = count Alive neighborStates
+  where neighborStates = map (W.cellAt w) (neighbors w x)
+        neighbors = W.neighbors W.mooreNeighbors
 
 transition :: CellState -> Int -> CellState
 transition Dead  n | n == 3           = Alive
@@ -53,14 +49,3 @@ evolveCell w x s = transition s (neighborsAlive w x)
 renderCell :: CellState -> Char
 renderCell Alive = '@'
 renderCell Dead  = ' '
-
-step :: World CellState -> IO (World CellState)
-step w = do
-  putStr $ W.render renderCell w
-  threadDelay 3000
-  return $ W.evolve evolveCell w
-
-main :: IO ()
-main = do 
-  world <- randomWorld
-  iterateM step world

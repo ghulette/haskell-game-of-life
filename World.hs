@@ -12,25 +12,40 @@ chunk n xs = ys : chunk n zs
 -- World stuff
 
 type Loc = (Int,Int)
-type Offset = (Int,Int)
+type Offset = Loc
 type Rect = (Loc,Loc)
+
+data Shape = Plane | Torus 
+  deriving (Eq,Show)
 
 data World a = World {
   worldBounds :: Rect,
+  worldShape  :: Shape,
   worldCells  :: Array Loc a
 } deriving Eq
-
-instance Functor World where
-  fmap f (World sz cells) = World sz (fmap f cells)
 
 instance Show a => Show (World a) where
   show = render (head . show)
 
+instance Functor World where
+  fmap f (World r shp cells) = World r shp (fmap f cells)
+
+world :: Rect -> Shape -> (Loc -> a) -> World a
+world bounds shape f = World bounds shape cels
+  where locs = locationsIn bounds
+        states = map f locs
+        cels = array bounds (zip locs states)
+
+fromList :: Rect -> Shape -> [a] -> World a
+fromList bounds shape xs = World bounds shape cels
+  where locs = locationsIn bounds
+        cels = array bounds (zip locs xs)
+
 cells :: World a -> [a]
-cells w = map ((!) (worldCells w)) (locationsIn (worldBounds w))
+cells w = map ((worldCells w)!) (locationsIn (worldBounds w))
 
 cellAt :: World a -> Loc -> a
-cellAt (World _ cels) x = cels ! x
+cellAt (World _ _ cels) x = cels ! x
 
 inside :: World a -> Loc -> Bool
 inside w = inRange (worldBounds w)
@@ -38,20 +53,17 @@ inside w = inRange (worldBounds w)
 locationsIn :: Rect -> [Loc]
 locationsIn ((x1,y1),(x2,y2)) = [(x,y) | y <- [y1..y2], x <- [x1..x2]]
 
-world :: Rect -> (Loc -> a) -> World a
-world bounds f = World { worldBounds = bounds, worldCells = cels}
-  where locs = locationsIn bounds
-        states = map f locs
-        cels = array bounds (zip locs states)
+neighbors :: [Offset] -> World a -> Loc -> [Loc]
+neighbors ds w (x,y) = filter (inside w) neighborLocs
+  where neighborLocs = map (\(dx,dy) -> (x+dx,y+dy)) ds
 
-fromList :: Rect -> [a] -> World a
-fromList bounds xs = World { worldBounds = bounds, worldCells = cels}
-  where locs = locationsIn bounds
-        cels = array bounds (zip locs xs)
+cardinalNeighbors :: [Offset]
+cardinalNeighbors = [(0,-1),(-1, 0),(1, 0),(0, 1)]
 
-neighbors :: World a -> [Offset] -> Loc -> [Loc]
-neighbors w deltas (x,y) = filter (inside w) locs
-  where locs = map (\(dx,dy) -> (x+dx,y+dy)) deltas
+mooreNeighbors :: [Offset]
+mooreNeighbors = [(-1,-1),(0,-1),(1,-1),
+                     (-1, 0),       (1, 0),
+                     (-1, 1),(0, 1),(1, 1)]
 
 render :: (a -> Char) -> World a -> String
 render f w = unlines $ chunk n $ fmap f $ cells w
@@ -59,8 +71,9 @@ render f w = unlines $ chunk n $ fmap f $ cells w
         n = (x2 - x1) + 1
 
 evolve :: (World a -> Loc -> a -> a) -> World a -> World a
-evolve f w = World bounds cels'
+evolve f w = World bounds shape cels'
   where bounds = worldBounds w
+        shape = worldShape w
         cels = worldCells w
         grid = locationsIn bounds
         cels' = array bounds [(x,f w x (cels!x)) | x <- grid]
