@@ -53,9 +53,22 @@ inside w = inRange (worldBounds w)
 locationsIn :: Rect -> [Loc]
 locationsIn ((x1,y1),(x2,y2)) = [(x,y) | y <- [y1..y2], x <- [x1..x2]]
 
+wrap :: World a -> Loc -> Loc
+wrap world (x,y) = 
+  case worldShape world of
+    Plane -> (x,y)
+    Torus -> 
+      let 
+        ((x1,y1),(x2,y2)) = worldBounds world
+        w = x2 - x1
+        h = y2 - y1
+      in
+        ((x `mod` w) + x1,(y `mod` h) + y1)
+
 neighbors :: [Offset] -> World a -> Loc -> [Loc]
 neighbors ds w (x,y) = filter (inside w) neighborLocs
-  where neighborLocs = map (\(dx,dy) -> (x+dx,y+dy)) ds
+  where neighborLocs = map (\(dx,dy) -> wrap' (x+dx,y+dy)) ds
+        wrap' = wrap w
 
 cardinalNeighbors :: [Offset]
 cardinalNeighbors = [(0,-1),(-1, 0),(1, 0),(0, 1)]

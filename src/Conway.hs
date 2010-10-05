@@ -4,6 +4,7 @@ module Conway where
 
 import Control.Monad (replicateM)
 import System.Random
+import World (World,Loc)
 import qualified World as W
 
 -- Generic utility functions
@@ -12,9 +13,6 @@ count :: Eq a => a -> [a] -> Int
 count x xs = length (filter (x==) xs)
 
 -- Game of Life
-
-type World = W.World
-type Loc = W.Loc
 
 data CellState = Alive | Dead
   deriving (Eq,Show)
@@ -28,12 +26,13 @@ randomWorld :: Int -> Int -> IO (World CellState)
 randomWorld width height = do
   states <- replicateM (width * height) randomCell
   let bounds = ((0,0),(width-1,height-1))
-  return $ W.fromList bounds W.Plane states
+  return $ W.fromList bounds W.Torus states
 
 neighborsAlive :: World CellState -> Loc -> Int
 neighborsAlive w x = count Alive neighborStates
-  where neighborStates = map (W.cellAt w) (neighbors w x)
-        neighbors = W.neighbors W.mooreNeighbors
+  where neighborStates = map cellAt (neighbors x)
+        neighbors = W.neighbors W.mooreNeighbors w
+        cellAt = W.cellAt w
 
 transition :: CellState -> Int -> CellState
 transition Dead  n | n == 3           = Alive

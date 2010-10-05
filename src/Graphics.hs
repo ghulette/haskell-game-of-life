@@ -17,18 +17,19 @@ green = (0.0,1.0,0.0) :: PatchColor
 blue  = (0.0,0.0,1.0) :: PatchColor
 white = (1.0,1.0,1.0) :: PatchColor
 
-patch :: (Float,Float) -> (Float,Float) -> PatchColor -> IO ()
-patch (x,y) (w,h) (r,g,b) = do
+patch :: Loc -> PatchColor -> IO ()
+patch (x,y) (r,g,b) = do
   color $ Color3 r g b
-  rect (Vertex2 x y) (Vertex2 (x+w) (y+h))
+  rect (Vertex2 xf yf) (Vertex2 (xf+1) (yf+1))
+  where xf = fromIntegral x :: Float
+        yf = fromIntegral y :: Float
 
 display :: (a -> PatchColor) -> IORef (World a) -> IO ()
 display colorf worldRef = do
   world <- get worldRef
   clear [ColorBuffer]
-  patch (0,0) (1,1) red
   let locs = locationsIn (worldBounds world)
-  forM_ locs (\(x,y) -> patch (fromIntegral x,fromIntegral y) (1.0,1.0) (colorf $ cellAt world (x,y)))
+  forM_ locs $ \loc -> patch loc (colorf $ cellAt world loc)
   swapBuffers
 
 idle :: IORef (World a) -> (World a -> World a) -> IO ()

@@ -10,3 +10,4 @@ Executable conway
   Main-Is:        Main.hs
   Hs-Source-Dirs: src
   Build-Depends:	base >= 4,array,random,GLUT,OpenGL
+  GHC-Options: -O2
