@@ -7,6 +7,6 @@ Synopsis:       Conway's game of Life
 Build-Type:     Simple
 
 Executable conway
-  Build-Depends:	base,array,random,GLUT,OpenGL
   Main-Is:        Main.hs
   Hs-Source-Dirs: src
+  Build-Depends:	base >= 4,array,random,GLUT,OpenGL

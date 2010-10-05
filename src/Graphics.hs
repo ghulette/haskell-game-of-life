@@ -1,4 +1,7 @@
-module Graphics (doGraphics,PatchColor,red,green,blue,white,black) where
+module Graphics 
+  (doGraphics
+  ,PatchColor,red,green,blue,white,black) 
+where
 
 import Control.Monad
 import Data.IORef
@@ -31,7 +34,6 @@ display colorf worldRef = do
 idle :: IORef (World a) -> (World a -> World a) -> IO ()
 idle w evolve = do
   w $~ evolve
-  --threadDelay 500
   postRedisplay Nothing
   
 reshape :: Size -> IO ()
@@ -46,6 +48,7 @@ doGraphics colorf evolvef world = do
   (progname,args) <- getArgsAndInitialize
   initialDisplayMode $= [DoubleBuffered]
   window <- createWindow "Conway"
+  windowSize $= Size 500 500
   let ((x1,y1),(x2,y2)) = worldBounds world
   ortho2D (fromIntegral x1) (fromIntegral x2) 
           (fromIntegral y1) (fromIntegral y2)
