@@ -9,10 +9,7 @@ import qualified World as W
 -- Generic utility functions
   
 count :: Eq a => a -> [a] -> Int
-count x xs = length (filter ((==) x) xs)
-
-iterateM :: Monad m => (a -> m a) -> a -> m ()
-iterateM f x = f x >>= iterateM f
+count x xs = length (filter (x==) xs)
 
 -- Game of Life
 

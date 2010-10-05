@@ -62,8 +62,8 @@ cardinalNeighbors = [(0,-1),(-1, 0),(1, 0),(0, 1)]
 
 mooreNeighbors :: [Offset]
 mooreNeighbors = [(-1,-1),(0,-1),(1,-1),
-                     (-1, 0),       (1, 0),
-                     (-1, 1),(0, 1),(1, 1)]
+                  (-1, 0),       (1, 0),
+                  (-1, 1),(0, 1),(1, 1)]
 
 render :: (a -> Char) -> World a -> String
 render f w = unlines $ chunk n $ fmap f $ cells w
