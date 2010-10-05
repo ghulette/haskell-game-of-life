@@ -1,2 +1,12 @@
-Two versions of Conway's Game of Life. One is a fairly standard version, the
+Two versions of Conway's game of Life. One is a fairly standard version, the
 other is very slow, but specified in an interesting way.
+
+To build, use Cabal:
+$ cabal configure
+$ cabal build
+
+If you want to install:
+$ cabal install
+
+Or just run it:
+$ ./dist/build/conway/conway
