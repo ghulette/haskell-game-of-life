@@ -15,7 +15,7 @@ type Loc = (Int,Int)
 type Offset = Loc
 type Rect = (Loc,Loc)
 
-data Shape = Plane | Torus 
+data Shape = Plane | Torus
   deriving (Eq,Show)
 
 data World a = World {

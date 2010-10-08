@@ -9,7 +9,7 @@ import Graphics.Rendering.OpenGL
 import Graphics.UI.GLUT
 import World
 
-type PatchColor = (Float,Float,Float)
+type PatchColor = (GLfloat,GLfloat,GLfloat)
 
 black = (0.0,0.0,0.0) :: PatchColor
 red   = (1.0,0.0,0.0) :: PatchColor
@@ -21,8 +21,8 @@ patch :: Loc -> PatchColor -> IO ()
 patch (x,y) (r,g,b) = do
   color $ Color3 r g b
   rect (Vertex2 xf yf) (Vertex2 (xf+1) (yf+1))
-  where xf = fromIntegral x :: Float
-        yf = fromIntegral y :: Float
+  where xf = fromIntegral x :: GLfloat
+        yf = fromIntegral y :: GLfloat
 
 display :: (a -> PatchColor) -> IORef (World a) -> IO ()
 display colorf worldRef = do
